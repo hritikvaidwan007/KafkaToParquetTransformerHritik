@@ -1,0 +1,40 @@
+modules = ["java"]
+
+[nix]
+channel = "stable-24_05"
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Flink Application"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "flink-application"
+
+[[workflows.workflow]]
+name = "Flink Application"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "mvn clean package && java -classpath target/classes:target/dependency/* com.example.KafkaToS3Job --bootstrap-servers localhost:9092 --topic input-topic --s3-path s3://my-bucket/output"
+waitForPort = 5000
+
+[[workflows.workflow]]
+name = "flink-application"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd src && ls -la && find . -type f | sort"
+
+[deployment]
+run = ["sh", "-c", "mvn clean package && java -classpath target/classes:target/dependency/* com.example.KafkaToS3Job --bootstrap-servers localhost:9092 --topic input-topic --s3-path s3://my-bucket/output"]
