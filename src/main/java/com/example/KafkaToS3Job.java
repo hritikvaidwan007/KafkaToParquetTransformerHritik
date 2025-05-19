@@ -4,22 +4,18 @@ import com.example.model.SchemaResponse;
 import com.example.util.AvroParquetWriter;
 import com.example.util.SchemaFetcher;
 import org.apache.avro.Schema;
+import org.apache.avro.generic.GenericRecord;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.api.java.utils.ParameterTool;
-import org.apache.flink.connector.base.DeliveryGuarantee;
-import org.apache.flink.connector.kafka.sink.KafkaRecordSerializationSchema;
 import org.apache.flink.connector.kafka.source.KafkaSource;
 import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
-import org.apache.flink.connector.kafka.source.reader.deserializer.KafkaRecordDeserializationSchema;
+import org.apache.flink.core.fs.Path;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.filesystem.StreamingFileSink;
-import org.apache.flink.streaming.api.functions.sink.filesystem.rollingpolicies.OnCheckpointRollingPolicy;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingProcessingTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
-import org.apache.avro.generic.GenericRecord;
-import org.apache.flink.core.fs.Path;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +61,7 @@ public class KafkaToS3Job {
         Properties kafkaProps = new Properties();
         if (!username.isEmpty() && !password.isEmpty()) {
             // SASL authentication if credentials are provided
-            // Demonstrating string concatenation
+            // Demonstrating string concatenation (Java feature)
             kafkaProps.put("security.protocol", "SASL_SSL");
             kafkaProps.put("sasl.mechanism", "PLAIN");
             kafkaProps.put("sasl.jaas.config", 
@@ -87,31 +83,30 @@ public class KafkaToS3Job {
                 .build();
         
         // Create data stream from Kafka source
-        // Demonstrating method chaining - a common pattern in Flink
+        // Demonstrating method chaining - a common pattern in Flink (Java feature)
         DataStream<String> stream = env.fromSource(
                 source, 
                 WatermarkStrategy.noWatermarks(), 
                 "Kafka Source");
         
         // Process stream and convert to Avro GenericRecord
-        // Demonstrating lambda expressions (Java 8+)
+        // Demonstrating lambda expressions (Java 8+ feature)
         DataStream<GenericRecord> avroRecords = stream
                 .map(message -> AvroParquetWriter.convertJsonToAvro(message, avroSchema))
                 .name("Convert to Avro");
         
         // Create Parquet sink
         // Using StreamingFileSink with path and custom rolling policy
-        // Demonstrating use of Builder Pattern
+        // Demonstrating use of Builder Pattern (Java feature)
         StreamingFileSink<GenericRecord> parquetSink = AvroParquetWriter.createParquetSink(
                 new Path(s3Path), 
                 avroSchema, 
                 Time.minutes(5));
         
         // Window the data stream and write to S3 every 5 minutes
-        // Demonstrating use of method references (Java 8+)
+        // Demonstrating use of method references (Java 8+ feature)
         avroRecords
                 .windowAll(TumblingProcessingTimeWindows.of(Time.minutes(5)))
-                .trigger(new AvroParquetWriter.CountAndTimeTrigger<>(1000, Time.minutes(5)))
                 .apply(AvroParquetWriter::windowedWriter)
                 .addSink(parquetSink)
                 .name("Parquet S3 Sink");

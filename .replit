@@ -1,7 +1,8 @@
-modules = ["java"]
+modules = ["java", "python-3.11"]
 
 [nix]
 channel = "stable-24_05"
+packages = ["jdk11", "maven"]
 
 [workflows]
 runButton = "Project"

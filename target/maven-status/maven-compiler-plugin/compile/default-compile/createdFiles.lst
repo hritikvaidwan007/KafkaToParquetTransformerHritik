@@ -1,0 +1,8 @@
+com/example/model/SchemaResponse$SchemaVersion.class
+com/example/model/SchemaResponse$SchemaMetadata.class
+com/example/model/SchemaResponse.class
+com/example/LocalTestJob.class
+com/example/util/SchemaFetcher.class
+com/example/model/SchemaResponse$Schemas.class
+com/example/KafkaToS3Job.class
+com/example/util/AvroParquetWriter.class
